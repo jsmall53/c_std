@@ -9,10 +9,12 @@
 
 void* mem_reserve(i64 nbytes);
 void* mem_commit(void* base, i64 nbytes);
+void  mem_release(void* base, i64 nbytes);
 
 void* jalloc(i64 nbytes);
 
 #ifdef _WIN32
+// @TODO: Impl on windows
 #define WINDOWS
 /*
  * Begin defining playform api for windows based operating system
@@ -71,6 +73,10 @@ void* mem_commit(void* addr, i64 nbytes) {
         return 0;
     }
     return addr;
+}
+
+void  mem_release(void* base, i64 nbytes) {
+    munmap(base, nbytes);
 }
 
 #include <stdlib.h>
