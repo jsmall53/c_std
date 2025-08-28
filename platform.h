@@ -30,6 +30,18 @@ i64 page_size() {
     return (i64)si.dwPageSize;
 }
 
+void* mem_reserve(i64 nbytes) {
+
+}
+
+void* mem_commit(void* addr, i64 nbytes) {
+
+}
+
+void* mem_release(void* addr, i64 nbytes) {
+
+}
+
 void* jalloc(i64 nbytes) {
     void* ptr = malloc(nbytes);
     if (!ptr) {

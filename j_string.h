@@ -1,8 +1,10 @@
 #include "j_types.h"
 
-struct String {
+typedef struct String {
     char* buf;
     u64 len;
-};
+} String;
+
+
 
 

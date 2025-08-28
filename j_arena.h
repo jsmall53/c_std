@@ -148,5 +148,3 @@ void arena_release(Arena* arena) {
 #define arena_push_struct(arena, type)       (type *)_arena_push((arena), sizeof(type), alignof(type), true)
 #define arena_push_array(arena, count, type) (type *)_arena_push(arena, (count) * sizeof(type), alignof(type[1]))
 
-
-
