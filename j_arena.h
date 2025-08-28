@@ -1,5 +1,7 @@
 #pragma once
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdalign.h>
 #include <assert.h>
 
 #include "platform.h"
@@ -56,7 +58,9 @@
  *
  * */
 
+#ifndef DEFAULT_ARENA_SIZE
 #define DEFAULT_ARENA_SIZE    MEGABYTES(64)
+#endif
 
 #define MIN(x, y) ((x) <= (y) ? (x) : (y))
 #define MAX(x, y) ((x) >= (y) ? (x) : (y))
@@ -86,7 +90,7 @@ void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
             return 0;
         }
         i64 page   = page_size();
-        u64 commit = page; // start with single page size
+        u64 commit = page * 2; // start with 2 page size
         base = mem_commit(base, commit);
         arena->base      = base;
         arena->reserved  = DEFAULT_ARENA_SIZE;
@@ -103,15 +107,15 @@ void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
 
     usize available = arena->committed - arena->used;
     if (aligned_size > available) {
-        // commit the next page.
-        i64 page = page_size();
+        i64 page =   page_size();
+        i64 commit = page * 2;
         void* offset = (void*)((u8*)arena->base + arena->committed);
-        void* next_page = mem_commit(offset, page);
+        void* next_page = mem_commit(offset, commit);
         if (next_page == 0) {
             perror("Failed to commit next page.");
             return 0;
         }
-        arena->committed += page;
+        arena->committed += commit;
     }
 
     // seems like we have enough memory to allocate this new chunk
@@ -119,16 +123,30 @@ void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
     arena->used += aligned_size;
     assert(arena->used <= arena->committed);
 
-    printf("base: %x\nreserved: %x\ncommitted: %x\nused: %x\nalloced_ptr: %x\n\n", 
-            arena->base, arena->reserved, arena->committed, arena->used, ptr);
+    // printf("base: %x\nreserved: %x\ncommitted: %x\nused: %x\nalloced_ptr: %x\n\n", 
+    //         arena->base, arena->reserved, arena->committed, arena->used, ptr);
     return ptr;
+}
+
+void arena_clear(Arena* arena) {
+    assert(arena != NULL);
+    // @TODO: should we zero out the memory before setting used=0?
+    arena->used = 0;
+    return;
+}
+
+void arena_release(Arena* arena) {
+    assert(arena != NULL);
+    mem_release(arena->base, arena->reserved);
+    arena->base = NULL;
+    arena->reserved  = 0;
+    arena->committed = 0;
+    arena->used      = 0;
 }
 
 #define arena_push(arena, size)              _arena_push((arena), (size), DEFAULT_ARENA_ALIGNMENT, true)
 #define arena_push_struct(arena, type)       (type *)_arena_push((arena), sizeof(type), alignof(type), true)
 #define arena_push_array(arena, count, type) (type *)_arena_push(arena, (count) * sizeof(type), alignof(type[1]))
 
-void arena_clear(Arena* arena);
-void arena_release(Arena* arena);
 
 

@@ -4,6 +4,21 @@
 #include "platform.h"
 #include "j_arena.h"
 
+typedef struct Node Node;
+
+void test_basic_mem();
+void test_arena_push();
+void test_arena_clear();
+void test_arena_release();
+
+int main(void) {
+    test_arena_push();
+    test_arena_clear();
+    test_arena_release();
+
+    return 0;
+}
+
 void test_basic_mem() {
     usize commited = 0;
     i64 page = page_size();
@@ -27,7 +42,7 @@ typedef struct Node {
 } Node;
 
 void test_arena_push() {
-    Arena arena;
+    Arena arena = {0};
     void* first = arena_push(&arena, KILOBYTES(4));
     assert(first != NULL);
     assert(first == arena.base);
@@ -36,7 +51,7 @@ void test_arena_push() {
     assert(second != NULL);
     assert(second == (void*)((u8*)arena.base + KILOBYTES(4)));
 
-    Arena arena2;
+    Arena arena2 = {0};
     Node* node1 = arena_push_struct(&arena2, Node);
     assert(node1 != 0);
     assert(node1->next == 0);
@@ -57,11 +72,44 @@ void test_arena_push() {
     assert(iter->next == node1);
     iter = iter->next;
     assert(iter->next == NULL);
+    iter = iter->next;
+    assert(iter == NULL);
+    printf("test_arena_push passed.\n");
+
+    arena_release(&arena);
+    arena_release(&arena2);
 }
 
-int main(void) {
-    test_arena_push();
-    return 0;
+void test_arena_clear() {
+    Arena arena = {0};
+    void* first = arena_push(&arena, KILOBYTES(4));
+    assert(arena.base != NULL);
+    assert(first != NULL);
+    assert(first == arena.base);
+    assert(arena.used == 0x1000);
+
+    i64 committed = arena.committed;
+    i64 reserved  = arena.reserved;
+    arena_clear(&arena);
+    assert(arena.used == 0);
+    assert(arena.committed == committed);
+    assert(arena.reserved == reserved);
+
+    arena_release(&arena);
+    printf("test_arena_clear passed.\n");
 }
 
+void test_arena_release() {
+    Arena arena = {0};
+    void* ptr = arena_push(&arena, KILOBYTES(4));
+    assert(arena.base != NULL);
+    assert(arena.reserved > 0);
 
+    arena_release(&arena);
+    assert(arena.base == NULL);
+    assert(arena.reserved == 0);
+    assert(arena.committed == 0);
+    assert(arena.used == 0);
+
+    printf("test_arena_release passed.\n");
+}

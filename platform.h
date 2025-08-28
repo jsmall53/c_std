@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include "j_types.h"
 
-#define KILOBYTES(n)  ((n) * 1024)
-#define MEGABYTES(n)  (KILOBYTES(n) * 1024)
-#define GIGABYTES(n)  (MEGABYTES(n) * 1024)
+#define KILOBYTES(n)  ((n) * 1024LL)
+#define MEGABYTES(n)  (KILOBYTES(n) * 1024LL)
+#define GIGABYTES(n)  (MEGABYTES(n) * 1024LL)
 
 void* mem_reserve(i64 nbytes);
 void* mem_commit(void* base, i64 nbytes);
@@ -75,8 +75,12 @@ void* mem_commit(void* addr, i64 nbytes) {
     return addr;
 }
 
-void  mem_release(void* base, i64 nbytes) {
-    munmap(base, nbytes);
+void mem_release(void* base, i64 nbytes) {
+    i32 res = munmap(base, nbytes);
+    if (res != 0) {
+        perror("Problem releasing memory");
+    }
+    return;
 }
 
 #include <stdlib.h>
