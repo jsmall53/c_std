@@ -1,17 +1,4 @@
-#pragma once
-
-#include <stdio.h>
-#include "j_types.h"
-
-#define KILOBYTES(n)  ((n) * 1024LL)
-#define MEGABYTES(n)  (KILOBYTES(n) * 1024LL)
-#define GIGABYTES(n)  (MEGABYTES(n) * 1024LL)
-
-void* mem_reserve(i64 nbytes);
-void* mem_commit(void* base, i64 nbytes);
-void  mem_release(void* base, i64 nbytes);
-
-void* jalloc(i64 nbytes);
+#include "j_std.h"
 
 #ifdef _WIN32
 // @TODO: Impl on windows
@@ -106,5 +93,4 @@ void* jalloc(i64 nbytes) {
 }
 
 #endif // UNIX
-
 

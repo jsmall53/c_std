@@ -1,62 +1,9 @@
-#pragma once
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdalign.h>
 #include <assert.h>
 
-#include "platform.h"
-#include "j_types.h"
+#include "j_std.h"
 
 #define DEFAULT_ARENA_ALIGNMENT 8
-
-// @TODO: turn the below stuff into functional code once the 
-//          base arena functionality is finished.
-/*
- * Example using object pool with an arena for reference:
- *  typedef struct {
- *      Event* next;
- *      ...
- *  } Event;
- *
- *  Arena event_arena = {0};
- *  Event* first_event; Event* last_event;
- *  Event* free_event = 0;
- *
- *  Event* push_event() {
- *      Event* event = PoolAlloc(&event_arena, free_event);
- *      QueuePush(first_event, last_event, event);
- *      return event;
- *  }
- *
- *  void process_events() {
- *      Event* eventIter = firstEvent;
- *      while (eventIter != NULL) {
- *          Event* event = eventIter;
- *          eventIter = eventIter->next;
- *
- *          // Process event
- *          pool_free(free_event, event);
- *      }
- *  }
- *
- * ******************
- *  typedef struct {
- *      PoolNode* next;
- *  } PoolNode;
- *
- *  void _pool_free(PoolNode* free_node, PoolNode* node) {
- *      node->next = free_node;
- *      free_node  = node;
- *      return;
- *  }
- *
- *  void* _pool_alloc(Arena* arena, PoolNode** pool, u64 item_size, bool/b32 clear_to_zero, u32 count);
- *
- *  #define pool_alloc(arena, pool)                     _pool_alloc(arena, (Pool**)&pool, sizeof(*(pool)), true, DEFAULT_BATCH_COUNT)
- *  #define pool_alloc_ex(arena, pool, clear, count)    _pool_alloc(arena, (Pool**)&pool, sizeof(*(pool)), clear, count)
- *  #define pool_free(pool, ptr)                        (((PoolNode*)ptr)->next = (PoolNode*) pool, *((void**)&(pool)) = ptr)
- *
- * */
 
 #ifndef DEFAULT_ARENA_SIZE
 #define DEFAULT_ARENA_SIZE    MEGABYTES(64)
@@ -72,13 +19,6 @@
 #define ALIGN_DOWN_PTR(p, a) ((void *)ALIGN_DOWN((uintptr_t)(p), (a)))
 #define ALIGN_UP_PTR(p, a) ((void *)ALIGN_UP((uintptr_t)(p), (a)))
 
-
-typedef struct Arena {
-    u64   reserved;
-    u64   committed;
-    u64   used;
-    void* base;
-} Arena;
 
 void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
     assert(arena != NULL);
@@ -128,14 +68,20 @@ void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
     return ptr;
 }
 
-void arena_clear(Arena* arena) {
+
+
+void* j_std_arena_push(Arena* arena, u64 size) {
+    return _arena_push(arena, size, DEFAULT_ARENA_ALIGNMENT, true);
+}
+
+void j_std_arena_clear(Arena* arena) {
     assert(arena != NULL);
     // @TODO: should we zero out the memory before setting used=0?
     arena->used = 0;
     return;
 }
 
-void arena_release(Arena* arena) {
+void j_std_arena_release(Arena* arena) {
     assert(arena != NULL);
     mem_release(arena->base, arena->reserved);
     arena->base = NULL;
@@ -143,8 +89,4 @@ void arena_release(Arena* arena) {
     arena->committed = 0;
     arena->used      = 0;
 }
-
-#define arena_push(arena, size)              _arena_push((arena), (size), DEFAULT_ARENA_ALIGNMENT, true)
-#define arena_push_struct(arena, type)       (type *)_arena_push((arena), sizeof(type), alignof(type), true)
-#define arena_push_array(arena, count, type) (type *)_arena_push(arena, (count) * sizeof(type), alignof(type[1]))
 

@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "platform.h"
-#include "j_arena.h"
+#include "j_std.h"
 
 typedef struct Node Node;
 
@@ -43,25 +42,25 @@ typedef struct Node {
 
 void test_arena_push() {
     Arena arena = {0};
-    void* first = arena_push(&arena, KILOBYTES(4));
+    void* first = j_std_arena_push(&arena, KILOBYTES(4));
     assert(first != NULL);
     assert(first == arena.base);
 
-    void* second = arena_push(&arena, KILOBYTES(4));
+    void* second = j_std_arena_push(&arena, KILOBYTES(4));
     assert(second != NULL);
     assert(second == (void*)((u8*)arena.base + KILOBYTES(4)));
 
     Arena arena2 = {0};
-    Node* node1 = arena_push_struct(&arena2, Node);
+    Node* node1 = (Node*)j_std_arena_push(&arena2, sizeof(Node));
     assert(node1 != 0);
     assert(node1->next == 0);
 
-    Node* node2 = arena_push_struct(&arena2, Node);
+    Node* node2 = (Node*)j_std_arena_push(&arena2, sizeof(Node));
     assert(node2 != 0);
     assert(node2->next == 0);
     node2->next = node1;
 
-    Node* node3 = arena_push_struct(&arena2, Node);
+    Node* node3 = (Node*)j_std_arena_push(&arena2, sizeof(Node));
     assert(node3 != 0);
     assert(node3->next == 0);
     node3->next = node2;
@@ -76,13 +75,13 @@ void test_arena_push() {
     assert(iter == NULL);
     printf("test_arena_push passed.\n");
 
-    arena_release(&arena);
-    arena_release(&arena2);
+    j_std_arena_release(&arena);
+    j_std_arena_release(&arena2);
 }
 
 void test_arena_clear() {
     Arena arena = {0};
-    void* first = arena_push(&arena, KILOBYTES(4));
+    void* first = j_std_arena_push(&arena, KILOBYTES(4));
     assert(arena.base != NULL);
     assert(first != NULL);
     assert(first == arena.base);
@@ -90,22 +89,22 @@ void test_arena_clear() {
 
     i64 committed = arena.committed;
     i64 reserved  = arena.reserved;
-    arena_clear(&arena);
+    j_std_arena_clear(&arena);
     assert(arena.used == 0);
     assert(arena.committed == committed);
     assert(arena.reserved == reserved);
 
-    arena_release(&arena);
+    j_std_arena_release(&arena);
     printf("test_arena_clear passed.\n");
 }
 
 void test_arena_release() {
     Arena arena = {0};
-    void* ptr = arena_push(&arena, KILOBYTES(4));
+    void* ptr = j_std_arena_push(&arena, KILOBYTES(4));
     assert(arena.base != NULL);
     assert(arena.reserved > 0);
 
-    arena_release(&arena);
+    j_std_arena_release(&arena);
     assert(arena.base == NULL);
     assert(arena.reserved == 0);
     assert(arena.committed == 0);
