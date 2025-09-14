@@ -10,10 +10,14 @@ void test_arena_push();
 void test_arena_clear();
 void test_arena_release();
 
+void test_array_basic();
+
 int main(void) {
     test_arena_push();
     test_arena_clear();
     test_arena_release();
+
+    test_array_basic();
 
     return 0;
 }
@@ -85,14 +89,14 @@ void test_arena_clear() {
     assert(arena.base != NULL);
     assert(first != NULL);
     assert(first == arena.base);
-    assert(arena.used == 0x1000);
+    assert(j_std_arena_get_used(&arena) == 0x1000);
 
     i64 committed = arena.committed;
     i64 reserved  = arena.reserved;
     j_std_arena_clear(&arena);
     assert(arena.used == 0);
-    assert(arena.committed == committed);
-    assert(arena.reserved == reserved);
+    assert(j_std_arena_get_committed(&arena) == committed);
+    assert(j_std_arena_get_reserved(&arena) == reserved);
 
     j_std_arena_release(&arena);
     printf("test_arena_clear passed.\n");
@@ -111,4 +115,27 @@ void test_arena_release() {
     assert(arena.used == 0);
 
     printf("test_arena_release passed.\n");
+}
+
+typedef struct {
+    ARRAY_HEADER
+    f32* array;
+} FloatArray;
+
+void float_array_push(FloatArray* fa, f32 val) {
+    j_std_array_fit((ArrayHeader*)fa, fa->len + 1, sizeof(f32));
+    fa->array[fa->len++] = val;
+    return;
+}
+
+void test_array_basic() {
+    FloatArray fa;
+    j_std_array_reserve((ArrayHeader*)&fa, 24, sizeof(float));
+    float_array_push(&fa, 3.14);
+    float_array_push(&fa, 3.15);
+    float_array_push(&fa, 3.16);
+
+    assert(fa.len == 3);
+
+    printf("test_array_basic passed\n");
 }

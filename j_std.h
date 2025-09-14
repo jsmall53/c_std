@@ -5,6 +5,7 @@
  * TYPES
  * */
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -93,6 +94,16 @@ i64   page_size();
  *
  * */
 
+#define MIN(x, y) ((x) <= (y) ? (x) : (y))
+#define MAX(x, y) ((x) >= (y) ? (x) : (y))
+#define CLAMP_MAX(x, max) MIN(x, max)
+#define CLAMP_MIN(x, min) MAX(x, min)
+#define IS_POW2(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
+#define ALIGN_DOWN(n, a) ((n) & ~((a) - 1))
+#define ALIGN_UP(n, a) ALIGN_DOWN((n) + (a) - 1, (a))
+#define ALIGN_DOWN_PTR(p, a) ((void *)ALIGN_DOWN((uintptr_t)(p), (a)))
+#define ALIGN_UP_PTR(p, a) ((void *)ALIGN_UP((uintptr_t)(p), (a)))
+
 typedef struct Arena {
     u64   reserved;
     u64   committed;
@@ -104,22 +115,69 @@ void* j_std_arena_push(Arena* arena, u64 size);
 void  j_std_arena_clear(Arena* arena);
 void  j_std_arena_release(Arena* arena);
 
+u64 j_std_arena_get_reserved(Arena* arena);
+u64 j_std_arena_get_committed(Arena* arena);
+u64 j_std_arena_get_used(Arena* arena);
+
+/*
+ * struct Employee {
+ *    u64 id;
+ *    String name;
+ * };
+ * Arena arena = {0};
+ * Employee* employees = ArenaPushArray(&arena, 128, Employee);
+ * employee[0].id = 1;
+ * employee[0].name = PushString(&arena, "Bob");
+ * 
+ * ...
+ * ArenaRelease(&arena); // deletes employees and strings...
+ * */
 // #define arena_push_array(arena, count, type) (type *)_arena_push(arena, (count) * sizeof(type), alignof(type[1]))
 
 /*
  * ARRAY
  * */
 
-#define _ArrayHeader_ struct { u64 count; u64 capacity; };
+/*
+ * Example of how to define an array and use the api
+ *
+ *
+ * typedef struct {
+ *    ARRAY_HEADER
+ *    u8* array;
+ * } ByteArray;
+ * 
+ * Always call the value array field "array".
+ *
+ * Reserve an byte array of size 256
+ * ByteArray ba;
+ * j_std_array_reserve((ArrayHeader*)&ba, 256, sizeof(u8));
+ *
+ * Example of how to push a byte onto the array
+ * void byte_array_push(ByteArray* ba, u8 val) {
+    j_std_array_fit((ArrayHeader*)ba, ba->len + 1);
+    ba->array[fa->len++] = val;
+    return;
+   }
+ *
+ * */
+
+//
+// Embed the header into array structs
+//
+#define ARRAY_HEADER struct { u64 len; u64 capacity; };
 
 typedef struct { 
-    u64 count; 
+    u64 len; 
     u64 capacity; 
 } ArrayHeader;
 
-void* ArrayGrow();
+void j_std_array_reserve(ArrayHeader* header, u64 count, u64 item_size);
+void j_std_array_fit(ArrayHeader* header, u64 count, u64 item_size); // uses exponential sizing for now.
+// @TODO: I don't *think* push can be a one size fits all function.
+//        Should implement alongside array types for now.
+// void* j_std_array_push(ArrayHeader* header, void* array);
 void ArrayShift(ArrayHeader* header, void* array, u64 itemSize, u64 fromIndex);
-
 
 /*
  * STRINGS

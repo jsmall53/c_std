@@ -9,17 +9,6 @@
 #define DEFAULT_ARENA_SIZE    MEGABYTES(64)
 #endif
 
-#define MIN(x, y) ((x) <= (y) ? (x) : (y))
-#define MAX(x, y) ((x) >= (y) ? (x) : (y))
-#define CLAMP_MAX(x, max) MIN(x, max)
-#define CLAMP_MIN(x, min) MAX(x, min)
-#define IS_POW2(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
-#define ALIGN_DOWN(n, a) ((n) & ~((a) - 1))
-#define ALIGN_UP(n, a) ALIGN_DOWN((n) + (a) - 1, (a))
-#define ALIGN_DOWN_PTR(p, a) ((void *)ALIGN_DOWN((uintptr_t)(p), (a)))
-#define ALIGN_UP_PTR(p, a) ((void *)ALIGN_UP((uintptr_t)(p), (a)))
-
-
 void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
     assert(arena != NULL);
     
@@ -90,3 +79,14 @@ void j_std_arena_release(Arena* arena) {
     arena->used      = 0;
 }
 
+u64 j_std_arena_get_reserved(Arena* arena) {
+    return arena->reserved;
+}
+
+u64 j_std_arena_get_committed(Arena *arena) {
+    return arena->committed;
+}
+
+u64 j_std_arena_get_used(Arena* arena) {
+    return arena->used;
+}
