@@ -11,6 +11,7 @@ void test_arena_clear();
 void test_arena_release();
 
 void test_array_basic();
+void test_array_structs();
 
 int main(void) {
     test_arena_push();
@@ -18,6 +19,7 @@ int main(void) {
     test_arena_release();
 
     test_array_basic();
+    test_array_structs();
 
     return 0;
 }
@@ -41,7 +43,7 @@ void test_basic_mem() {
 }
 
 typedef struct Node {
-    struct Node* next;
+    Node* next;
 } Node;
 
 void test_arena_push() {
@@ -117,25 +119,53 @@ void test_arena_release() {
     printf("test_arena_release passed.\n");
 }
 
-typedef struct {
-    ARRAY_HEADER
-    f32* array;
-} FloatArray;
-
-void float_array_push(FloatArray* fa, f32 val) {
-    j_std_array_fit((ArrayHeader*)fa, fa->len + 1, sizeof(f32));
-    fa->array[fa->len++] = val;
-    return;
-}
-
 void test_array_basic() {
-    FloatArray fa;
+    Arena arena = {0};
+    ArrayF32 fa = {0};
     j_std_array_reserve((ArrayHeader*)&fa, 24, sizeof(float));
-    float_array_push(&fa, 3.14);
-    float_array_push(&fa, 3.15);
-    float_array_push(&fa, 3.16);
+    assert(fa.capacity == 24);
+
+    j_std_array_push_f32(&arena, &fa, 3.14);
+    j_std_array_push_f32(&arena, &fa, 3.15);
+    j_std_array_push_f32(&arena, &fa, 3.16);
 
     assert(fa.len == 3);
+    assert(fa.capacity == 24);
 
     printf("test_array_basic passed\n");
+}
+
+typedef struct {
+    u64 id;
+    char* name;
+} Data;
+
+typedef struct {
+    ARRAY_HEADER
+    Data* array;
+} ArrayData;
+
+void array_push_data(Arena* arena, ArrayData* an, Data val) {
+    j_std_array_fit_arena(arena, (ArrayHeader*)an, an->len + 1, sizeof(Data));
+    // printf("%i\n", an->len);
+    // printf("%i\n", an->array[an->len++].id);
+    an->array[an->len++] = val;
+}
+
+void test_array_structs() {
+    Arena arena = {0};
+    Data data;
+    data.id = 42;
+    data.name = "Bob";
+    ArrayData na = {0};
+
+    assert(na.len == 0);
+    array_push_data(&arena, &na, data);
+    assert(na.capacity >= 1);
+    assert(na.len == 1);
+    data.id = 0;
+    assert(na.array[0].id == 42);
+
+    j_std_arena_release(&arena);
+    printf("test_array_structs passed\n");
 }
