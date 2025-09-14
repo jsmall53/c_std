@@ -13,6 +13,8 @@ void test_arena_release();
 void test_array_basic();
 void test_array_structs();
 
+void example_aggs();
+
 int main(void) {
     test_arena_push();
     test_arena_clear();
@@ -21,6 +23,7 @@ int main(void) {
     test_array_basic();
     test_array_structs();
 
+    example_aggs();
     return 0;
 }
 
@@ -122,7 +125,7 @@ void test_arena_release() {
 void test_array_basic() {
     Arena arena = {0};
     ArrayF32 fa = {0};
-    j_std_array_reserve((ArrayHeader*)&fa, 24, sizeof(float));
+    j_std_array_reserve((ArrayHeader*)&fa, 24, sizeof(f32));
     assert(fa.capacity == 24);
 
     j_std_array_push_f32(&arena, &fa, 3.14);
@@ -140,10 +143,7 @@ typedef struct {
     char* name;
 } Data;
 
-typedef struct {
-    ARRAY_HEADER
-    Data* array;
-} ArrayData;
+J_ARRAY_TYPE(ArrayData, Data);
 
 void array_push_data(Arena* arena, ArrayData* an, Data val) {
     j_std_array_fit_arena(arena, (ArrayHeader*)an, an->len + 1, sizeof(Data));
@@ -168,4 +168,22 @@ void test_array_structs() {
 
     j_std_arena_release(&arena);
     printf("test_array_structs passed\n");
+}
+
+typedef struct {
+    ArrayF32 open;
+    ArrayF32 high;
+    ArrayF32 low;
+    ArrayF32 close;
+    ArrayU64 volume;
+} AggsArray;
+
+void example_aggs() {
+    AggsArray aa = {0};
+
+    j_std_array_reserve((ArrayHeader*)&aa.open, 32, sizeof(f32));
+    j_std_array_reserve((ArrayHeader*)&aa.close, 32, sizeof(f32));
+    j_std_array_reserve((ArrayHeader*)&aa.high, 32, sizeof(f32));
+    j_std_array_reserve((ArrayHeader*)&aa.low, 32, sizeof(f32));
+    j_std_array_reserve((ArrayHeader*)&aa.volume, 32, sizeof(u64));
 }

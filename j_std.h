@@ -175,61 +175,29 @@ typedef struct {
 void j_std_array_reserve(ArrayHeader* header, u64 count, u64 item_size);
 void j_std_array_fit(ArrayHeader* header, u64 count, u64 item_size); // uses exponential sizing for now.
 void j_std_array_fit_arena(Arena* arena, ArrayHeader* header, u64 count, u64 item_size);
+
+// void* j_std_array_slice(ArrayHeader* header)
 // @TODO: I don't *think* push can be a one size fits all function.
 //        Should implement alongside array types for now.
 // void* j_std_array_push(ArrayHeader* header, void* array);
 // void ArrayShift(ArrayHeader* header, void* array, u64 itemSize, u64 fromIndex);
 
-typedef struct {
-    ARRAY_HEADER
-    u8* array;
-} ArrayU8;
+#define J_ARRAY_TYPE(name, type) \
+    typedef struct { \
+        ARRAY_HEADER  \
+        type* array;  \
+    } name;
 
-typedef struct {
-    ARRAY_HEADER
-    i8* array;
-} ArrayI8;
-
-typedef struct {
-    ARRAY_HEADER
-    u16* array;
-} ArrayU16;
-
-typedef struct {
-    ARRAY_HEADER
-    i16* array;
-} ArrayI16;
-
-typedef struct {
-    ARRAY_HEADER
-    u32* array;
-} ArrayU32;
-
-typedef struct {
-    ARRAY_HEADER
-    i32* array;
-} ArrayI32;
-
-typedef struct {
-    ARRAY_HEADER
-    u64* array;
-} ArrayU64;
-
-typedef struct {
-    ARRAY_HEADER
-    i64* array;
-} ArrayI64;
-
-typedef struct {
-    ARRAY_HEADER
-    f32* array;
-} ArrayF32;
-
-typedef struct {
-    ARRAY_HEADER
-    f32* array;
-} ArrayF64;
-
+J_ARRAY_TYPE(ArrayU8,  u8)
+J_ARRAY_TYPE(ArrayU16, u16);
+J_ARRAY_TYPE(ArrayU32, u32);
+J_ARRAY_TYPE(ArrayU64, u64);
+J_ARRAY_TYPE(ArrayI8,  i8)
+J_ARRAY_TYPE(ArrayI16, i16);
+J_ARRAY_TYPE(ArrayI32, i32);
+J_ARRAY_TYPE(ArrayI64, i64);
+J_ARRAY_TYPE(ArrayF32, f32)
+J_ARRAY_TYPE(ArrayF64, f64)
 
 void j_std_array_push_u8(Arena* arena, ArrayU8* array_u8, u8 val);
 void j_std_array_push_u16(Arena* arena, ArrayU16* array_u16, u16 val);
@@ -249,8 +217,10 @@ void j_std_array_push_f64(Arena* arena, ArrayF64* array_f64, f64 val);
  * */
 
 typedef struct {
+    ARRAY_HEADER
     char* buf;
-    u64 len;
 } String;
+
+
 
 #endif // J_STD_H

@@ -68,53 +68,19 @@ void j_std_array_fit_arena(Arena* arena, ArrayHeader* header, u64 count, u64 ite
     va->array = _array_grow_arena(arena, header, va->array, count, item_size, false);
 }
 
+#define J_ARRAY_PUSH(name, type) \
+    void j_std_array_push_##type(Arena* arena, name* array_##type, type val) { \
+        j_std_array_fit_arena(arena, (ArrayHeader*)array_##type, array_##type->len + 1, sizeof(type)); \
+        array_##type->array[array_##type->len++] = val; \
+    }
 
-void j_std_array_push_u8(Arena* arena, ArrayU8* array_u8, u8 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_u8, array_u8->len + 1, sizeof(u8));
-    array_u8->array[array_u8->len++] = val;
-}
-
-void j_std_array_push_u16(Arena* arena, ArrayU16* array_u16, u16 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_u16, array_u16->len + 1, sizeof(u16));
-    array_u16->array[array_u16->len++] = val;
-}
-
-void j_std_array_push_u32(Arena* arena, ArrayU32* array_u32, u32 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_u32, array_u32->len + 1, sizeof(u32));
-    array_u32->array[array_u32->len++] = val;
-}
-
-void j_std_array_push_u64(Arena* arena, ArrayU64* array_u64, u64 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_u64, array_u64->len + 1, sizeof(u64));
-    array_u64->array[array_u64->len++] = val;
-}
-
-void j_std_array_push_i8(Arena* arena,  ArrayI8*  array_i8,  i8 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_i8, array_i8->len + 1, sizeof(i8));
-    array_i8->array[array_i8->len++] = val;
-}
-
-void j_std_array_push_i16(Arena* arena, ArrayI16* array_i16, i16 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_i16, array_i16->len + 1, sizeof(i16));
-    array_i16->array[array_i16->len++] = val;
-}
-
-void j_std_array_push_i32(Arena* arena, ArrayI32* array_i32, i32 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_i32, array_i32->len + 1, sizeof(i32));
-    array_i32->array[array_i32->len++] = val;
-}
-
-void j_std_array_push_i64(Arena* arena, ArrayI64* array_i64, i64 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_i64, array_i64->len + 1, sizeof(i64));
-    array_i64->array[array_i64->len++] = val;
-}
-
-void j_std_array_push_f32(Arena* arena, ArrayF32* array_f32, f32 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_f32, array_f32->len + 1, sizeof(f32));
-    array_f32->array[array_f32->len++] = val;
-}
-
-void j_std_array_push_f64(Arena* arena, ArrayF64* array_f64, f64 val) {
-    j_std_array_fit_arena(arena, (ArrayHeader*)array_f64, array_f64->len + 1, sizeof(f64));
-    array_f64->array[array_f64->len++] = val;
-}
+J_ARRAY_PUSH(ArrayU8, u8);
+J_ARRAY_PUSH(ArrayU16, u16);
+J_ARRAY_PUSH(ArrayU32, u32);
+J_ARRAY_PUSH(ArrayU64, u64);
+J_ARRAY_PUSH(ArrayI8,  i8);
+J_ARRAY_PUSH(ArrayI16, i16);
+J_ARRAY_PUSH(ArrayI32, i32);
+J_ARRAY_PUSH(ArrayI64, i64);
+J_ARRAY_PUSH(ArrayF32, f32);
+J_ARRAY_PUSH(ArrayF64, f64);
