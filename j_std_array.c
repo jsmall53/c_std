@@ -84,3 +84,8 @@ J_ARRAY_PUSH(ArrayI32, i32);
 J_ARRAY_PUSH(ArrayI64, i64);
 J_ARRAY_PUSH(ArrayF32, f32);
 J_ARRAY_PUSH(ArrayF64, f64);
+
+
+typedef struct HiddenStruct {
+    u32 id;
+} HiddenStruct;

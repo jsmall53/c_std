@@ -5,22 +5,7 @@
  * TYPES
  * */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-
-typedef int8_t   i8;
-typedef uint8_t  u8;
-typedef int16_t  i16;
-typedef uint16_t u16;
-typedef int32_t  i32;
-typedef uint32_t u32;
-typedef int64_t  i64;
-typedef uint64_t u64;
-typedef size_t   usize;
-typedef float    f32;
-typedef double   f64;
+#include "j_std_types.h"
 
 /*
  * PLATFORM STUFF
@@ -104,7 +89,7 @@ i64   page_size();
 #define ALIGN_DOWN_PTR(p, a) ((void *)ALIGN_DOWN((uintptr_t)(p), (a)))
 #define ALIGN_UP_PTR(p, a) ((void *)ALIGN_UP((uintptr_t)(p), (a)))
 
-typedef struct Arena {
+typedef struct {
     u64   reserved;
     u64   committed;
     u64   used;

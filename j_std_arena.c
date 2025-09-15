@@ -1,5 +1,6 @@
 #include <stdalign.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "j_std.h"
 
@@ -8,6 +9,7 @@
 #ifndef DEFAULT_ARENA_SIZE
 #define DEFAULT_ARENA_SIZE    MEGABYTES(64)
 #endif
+
 
 void* _arena_push(Arena* arena, u64 size, u64 alignment, i32 clear_to_zero) {
     assert(arena != NULL);
